@@ -2,6 +2,43 @@ const path = require('path');
 const os = require('os');
 const fs = require('fs');
 require('dotenv').config({ path: path.join(__dirname, '.env') });
+
+// Hostinger (Linux Server) එකකද දුවන්නේ කියලා චෙක් කරමු
+const isServer = process.env.NODE_ENV === 'production' || !process.env.APPDATA;
+
+let log;
+let dataSyncLogPath;
+
+if (!isServer) {
+    // Local / Electron App Environment
+    log = require('electron-log');
+    const roamingDir = process.env.APPDATA || path.join(os.homedir(), 'AppData', 'Roaming');
+    dataSyncLogPath = path.join(roamingDir, 'Reox', 'logs', 'datasync.log');
+    fs.mkdirSync(path.dirname(dataSyncLogPath), { recursive: true });
+    log.transports.file.resolvePathFn = () => dataSyncLogPath;
+    console.log(log.transports.file.getFile().path);
+} else {
+    // Hostinger Server Environment (සාමාන්‍ය console.log හෝ සරල file log එකක්)
+    console.log("🌐 Running on Linux Production Server environment.");
+    
+    // Server එකේ logs folder එක project directory එක ඇතුලෙන්ම හදන්න
+    dataSyncLogPath = path.join(__dirname, 'logs', 'datasync.log');
+    fs.mkdirSync(path.dirname(dataSyncLogPath), { recursive: true });
+    
+    // electron-log එක වෙනුවට සරල mock එකක් සේරම console එකට දාන්න
+    log = {
+        info: (...args) => console.log('[INFO]', ...args),
+        error: (...args) => console.error('[ERROR]', ...args),
+        warn: (...args) => console.warn('[WARN]', ...args),
+        transports: { file: {} } // crash වීම වැලැක්වීමට empty object එකක්
+    };
+}
+
+const roamingDir = process.env.APPDATA || path.join(os.homedir(), 'AppData', 'Roaming');
+const dataSyncLogPath = path.join(roamingDir, 'Reox', 'logs', 'datasync.log');
+fs.mkdirSync(path.dirname(dataSyncLogPath), { recursive: true });
+log.transports.file.resolvePathFn = () => dataSyncLogPath;
+console.log(log.transports.file.getFile().path);
 const { initializeDatabase } = require('./config/dbInitializer');
 const express = require('express');
 const cors = require('cors');
