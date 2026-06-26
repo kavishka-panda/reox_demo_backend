@@ -1,0 +1,493 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model bank {
+  id        Int        @id @default(autoincrement())
+  bank_name String     @db.VarChar(100)
+  supplier  supplier[]
+}
+
+model batch {
+  id         Int      @id @default(autoincrement())
+  batch_name String   @db.VarChar(45)
+  date_time  DateTime @default(now()) @db.DateTime(0)
+  stock      stock[]
+}
+
+model brand {
+  idbrand    Int       @id @default(autoincrement())
+  name       String    @db.VarChar(255)
+  created_at DateTime? @default(now()) @db.DateTime(0)
+  product    product[]
+}
+
+model cash_sessions {
+  id                  Int              @id @default(autoincrement())
+  opening_date_time   DateTime         @db.DateTime(0)
+  user_id             Int
+  opening_balance     Float
+  cash_total          Float
+  card_total          Float
+  bank_total          Float
+  cashier_counters_id Int
+  cash_status_id      Int
+  cash_status         cash_status      @relation(fields: [cash_status_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_cash_sessions_cash_status1")
+  cashier_counters    cashier_counters @relation(fields: [cashier_counters_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_cash_sessions_cashier_counters1")
+  user                user             @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_cash_sessions_user1")
+  invoices            invoice[]
+  money_exchange      money_exchange[]
+  return_goods        return_goods[]
+
+  @@index([cash_status_id], map: "fk_cash_sessions_cash_status1_idx")
+  @@index([cashier_counters_id], map: "fk_cash_sessions_cashier_counters1_idx")
+  @@index([user_id], map: "fk_cash_sessions_user1_idx")
+}
+
+model cash_status {
+  id            Int             @id @default(autoincrement())
+  cash_status   String          @db.VarChar(45)
+  cash_sessions cash_sessions[]
+}
+
+model cashier_counters {
+  id              Int             @id @default(autoincrement())
+  cashier_counter String          @db.VarChar(100)
+  cash_sessions   cash_sessions[]
+}
+
+model category {
+  idcategory Int       @id @default(autoincrement())
+  name       String    @db.VarChar(255)
+  created_at DateTime? @default(now()) @db.DateTime(0)
+  product    product[]
+}
+
+model company {
+  id              Int        @id @default(autoincrement())
+  company_name    String     @unique(map: "company_name_UNIQUE") @db.VarChar(100)
+  company_email   String?    @db.VarChar(100)
+  company_contact String     @db.VarChar(45)
+  created_at      DateTime   @default(now()) @db.DateTime(0)
+  supplier        supplier[]
+}
+
+model creadit_book {
+  id                     Int                      @id @default(autoincrement())
+  invoice_id             Int
+  balance                Float
+  status_id              Int
+  created_at             DateTime                 @db.DateTime(0)
+  invoice                invoice                  @relation(fields: [invoice_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_creadit_book_invoice1")
+  status                 status                   @relation(fields: [status_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_creadit_book_status1")
+  credit_payment_history credit_payment_history[]
+
+  @@index([invoice_id], map: "fk_creadit_book_invoice1_idx")
+  @@index([status_id], map: "fk_creadit_book_status1_idx")
+}
+
+model credit_payment_history {
+  id              Int          @id @default(autoincrement())
+  creadit_book_id Int
+  amount          Float
+  payment_date    DateTime     @default(now()) @db.DateTime(0)
+  creadit_book    creadit_book @relation(fields: [creadit_book_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_credit_payment_history_creadit_book1")
+
+  @@index([creadit_book_id], map: "fk_credit_payment_history_creadit_book1_idx")
+}
+
+model customer {
+  id         Int         @id @default(autoincrement())
+  name       String      @db.VarChar(100)
+  contact    String      @db.VarChar(10)
+  email      String?     @db.VarChar(45)
+  status_id  Int
+  created_at DateTime    @default(now()) @db.DateTime(0)
+  status     status      @relation(fields: [status_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_customer_status1")
+  invoice    invoice[]
+  quotations quotation[]
+
+  @@index([status_id], map: "fk_customer_status1_idx1")
+}
+
+model damaged {
+  id               Int           @id @default(autoincrement())
+  stock_id         Int
+  qty              Float
+  reason_id        Int
+  description      String        @db.Text
+  date             DateTime      @db.Date
+  return_status_id Int
+  return_status    return_status @relation(fields: [return_status_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_damaged_return_status1")
+  reason           reason        @relation(fields: [reason_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_return_reason1")
+  stock            stock         @relation(fields: [stock_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_return_stock1")
+
+  @@index([return_status_id], map: "fk_damaged_return_status1_idx")
+  @@index([reason_id], map: "fk_return_reason1_idx")
+  @@index([stock_id], map: "fk_return_stock1_idx")
+}
+
+model exchange_type {
+  id             Int              @id @default(autoincrement())
+  exchange_type  String           @db.VarChar(45)
+  money_exchange money_exchange[]
+}
+
+model grn {
+  id            Int            @id @default(autoincrement())
+  bill_number   String         @db.VarChar(45)
+  supplier_id   Int
+  total         Float
+  paid_amount   Float
+  balance       Float
+  grn_status_id Int
+  create_at     DateTime       @default(now()) @db.DateTime(0)
+  status        status         @relation(fields: [grn_status_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_grn_grn_status1")
+  supplier      supplier       @relation(fields: [supplier_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_grn_supplier1")
+  grn_items     grn_items[]
+  grn_payments  grn_payments[]
+
+  @@index([grn_status_id], map: "fk_grn_grn_status1_idx")
+  @@index([supplier_id], map: "fk_grn_supplier1_idx")
+}
+
+model grn_items {
+  id       Int    @id @default(autoincrement())
+  grn_id   Int
+  stock_id Int
+  qty      Float
+  free_qty Float?
+  grn      grn    @relation(fields: [grn_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_grn_items_grn1")
+  stock    stock  @relation(fields: [stock_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_grn_items_stock1")
+
+  @@index([grn_id], map: "fk_grn_items_grn1_idx")
+  @@index([stock_id], map: "fk_grn_items_stock1_idx")
+}
+
+model grn_payments {
+  id               Int           @id @default(autoincrement())
+  paid_amount      Float
+  payment_types_id Int
+  grn_id           Int
+  created_at       DateTime      @default(now()) @db.DateTime(0)
+  grn              grn           @relation(fields: [grn_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_grn_payments_grn1")
+  payment_types    payment_types @relation(fields: [payment_types_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_grn_payments_payment_types1")
+
+  @@index([grn_id], map: "fk_grn_payments_grn1_idx")
+  @@index([payment_types_id], map: "fk_grn_payments_payment_types1_idx")
+}
+
+model invoice {
+  id               Int                @id @default(autoincrement())
+  invoice_number   String             @db.VarChar(45)
+  customer_id      Int?
+  sub_total        Float
+  discount         Float
+  extra_discount   Float
+  total            Float
+  refunded_amount  Float              @default(0)
+  created_at       DateTime           @db.DateTime(0)
+  cash_sessions_id Int
+  invoice_type_id  Int
+  creadit_book     creadit_book[]
+  cash_sessions    cash_sessions      @relation(fields: [cash_sessions_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_invoice_cash_sessions1")
+  customer         customer?          @relation(fields: [customer_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_invoice_customer1")
+  invoice_type     invoice_type       @relation(fields: [invoice_type_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_invoice_invoice_type1")
+  invoice_items    invoice_items[]
+  invoice_payments invoice_payments[]
+  return_goods     return_goods[]
+
+  @@index([cash_sessions_id], map: "fk_invoice_cash_sessions1_idx")
+  @@index([customer_id], map: "fk_invoice_customer1_idx")
+  @@index([invoice_type_id], map: "fk_invoice_invoice_type1_idx1")
+}
+
+model invoice_items {
+  id                  Int     @id @default(autoincrement())
+  stock_id            Int
+  invoice_id          Int
+  current_price       Float
+  discount_percentage Float
+  discount_amount     Float
+  qty                 Float
+  returned_qty        Float   @default(0)
+  invoice             invoice @relation(fields: [invoice_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_inoice_items_invoice1")
+  stock               stock   @relation(fields: [stock_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_inoice_items_stock1")
+
+  @@index([invoice_id], map: "fk_inoice_items_invoice1_idx")
+  @@index([stock_id], map: "fk_inoice_items_stock1_idx")
+}
+
+model invoice_type {
+  id           Int       @id @default(autoincrement())
+  Invoice_type String    @db.VarChar(45)
+  invoice      invoice[]
+}
+
+model money_exchange {
+  id                Int           @id @default(autoincrement())
+  cash_sessions_id  Int
+  exchange_type_id1 Int
+  amount            Float
+  reason            String        @db.Text
+  datetime          DateTime      @db.DateTime(0)
+  cash_sessions     cash_sessions @relation(fields: [cash_sessions_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_money_exchange_cash_sessions1")
+  exchange_type     exchange_type @relation(fields: [exchange_type_id1], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_money_exchange_exchange_type1")
+
+  @@index([cash_sessions_id], map: "fk_money_exchange_cash_sessions1_idx")
+  @@index([exchange_type_id1], map: "fk_money_exchange_exchange_type1_idx1")
+}
+
+model invoice_payments {
+  id               Int           @id @default(autoincrement())
+  invoice_id       Int
+  payment_types_id Int
+  amount           Float
+  payment_date     DateTime      @default(now()) @db.DateTime(0)
+  invoice          invoice       @relation(fields: [invoice_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_invoice_payments_invoice1")
+  payment_types    payment_types @relation(fields: [payment_types_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_invoice_payments_payment_types1")
+
+  @@index([invoice_id], map: "fk_invoice_payments_invoice1_idx")
+  @@index([payment_types_id], map: "fk_invoice_payments_payment_types1_idx")
+}
+
+model payment_types {
+  id               Int                @id @default(autoincrement())
+  payment_types    String             @db.VarChar(45)
+  grn_payments     grn_payments[]
+  invoice_payments invoice_payments[]
+}
+
+model product {
+  id                               Int                  @id @default(autoincrement())
+  product_name                     String               @db.VarChar(255)
+  product_code                     String               @unique(map: "product_code_UNIQUE") @db.VarChar(100)
+  category_id                      Int
+  brand_id                         Int
+  unit_id                          Int
+  product_type_id                  Int
+  created_at                       DateTime?            @default(now()) @db.DateTime(0)
+  brand                            brand                @relation(fields: [brand_id], references: [idbrand], onDelete: NoAction, onUpdate: NoAction, map: "fk_product_brand1")
+  category                         category             @relation(fields: [category_id], references: [idcategory], onDelete: NoAction, onUpdate: NoAction, map: "fk_product_category")
+  product_type                     product_type         @relation(fields: [product_type_id], references: [idproduct_type], onDelete: NoAction, onUpdate: NoAction, map: "fk_product_product_type1")
+  unit_id_product_unit_idTounit_id unit_id              @relation("product_unit_idTounit_id", fields: [unit_id], references: [idunit_id], onDelete: NoAction, onUpdate: NoAction, map: "fk_product_unit_id1")
+  product_variations               product_variations[]
+
+  @@index([brand_id], map: "fk_product_brand1_idx")
+  @@index([category_id], map: "fk_product_category_idx")
+  @@index([product_type_id], map: "fk_product_product_type1_idx")
+  @@index([unit_id], map: "fk_product_unit_id1_idx")
+}
+
+model product_status {
+  idproduct_status   Int                  @id @default(autoincrement())
+  status_name        String               @db.VarChar(45)
+  product_variations product_variations[]
+}
+
+model product_type {
+  idproduct_type Int       @id @default(autoincrement())
+  name           String    @db.VarChar(45)
+  created_at     DateTime? @default(now()) @db.DateTime(0)
+  product        product[]
+}
+
+model product_variations {
+  id                Int            @id @default(autoincrement())
+  product_id        Int
+  barcode           String         @db.VarChar(255)
+  color             String?        @db.VarChar(45)
+  size              String?        @db.VarChar(45)
+  storage_capacity  String?        @db.VarChar(45)
+  product_status_id Int
+  created_at        DateTime?      @default(now()) @db.DateTime(0)
+  product           product        @relation(fields: [product_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_product_variations_product1")
+  product_status    product_status @relation(fields: [product_status_id], references: [idproduct_status], onDelete: NoAction, onUpdate: NoAction, map: "fk_product_variations_product_status1")
+  stock             stock[]
+
+  @@index([product_id], map: "fk_product_variations_product1_idx")
+  @@index([product_status_id], map: "fk_product_variations_product_status1_idx")
+}
+
+model reason {
+  id      Int       @id @default(autoincrement())
+  reason  String    @db.Text
+  damaged damaged[]
+}
+
+/// This model has been renamed to 'Renamedreturn' during introspection, because the original name 'return' is reserved.
+model Return {
+  id         Int      @id @default(autoincrement())
+  damaged_id Int
+  qty        Float
+  date       DateTime @db.DateTime(0)
+
+  @@index([damaged_id], map: "fk_return_damaged1_idx")
+  @@map("return")
+}
+
+model return_goods {
+  id               Int           @id @default(autoincrement())
+  invoice_id       Int
+  cash_sessions_id Int
+  balance          Float
+  cash_sessions    cash_sessions @relation(fields: [cash_sessions_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_return_goods_cash_sessions1")
+  invoice          invoice       @relation(fields: [invoice_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_return_goods_invoice1")
+
+  @@index([cash_sessions_id], map: "fk_return_goods_cash_sessions1_idx")
+  @@index([invoice_id], map: "fk_return_goods_invoice1_idx")
+}
+
+model return_status {
+  id            Int       @id @default(autoincrement())
+  return_status String    @db.VarChar(50)
+  damaged       damaged[]
+}
+
+model role {
+  id        Int    @id @default(autoincrement())
+  user_role String @db.VarChar(45)
+  user      user[]
+}
+
+model status {
+  id           Int            @id @default(autoincrement())
+  ststus       String         @db.VarChar(45)
+  creadit_book creadit_book[]
+  customer     customer[]
+  grn          grn[]
+  supplier     supplier[]
+  user         user[]
+}
+
+model stock {
+  id                    Int                @id @default(autoincrement())
+  product_variations_id Int
+  barcode               String             @db.Text
+  batch_id              Int
+  mfd                   DateTime?          @db.Date
+  exp                   DateTime?          @db.Date
+  cost_price            Float
+  mrp                   Float
+  rsp                   Float
+  wsp                   Float?
+  qty                   Float
+  free_qty              Float?
+  damaged               damaged[]
+  grn_items             grn_items[]
+  invoice_items         invoice_items[]
+  quotation_items       quotation_items[]
+  batch                 batch              @relation(fields: [batch_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_stock_batch1")
+  product_variations    product_variations @relation(fields: [product_variations_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_stock_product_variations1")
+
+  @@index([batch_id], map: "fk_stock_batch1_idx")
+  @@index([product_variations_id], map: "fk_stock_product_variations1_idx")
+}
+
+model supplier {
+  id             Int      @id @default(autoincrement())
+  supplier_name  String   @db.VarChar(100)
+  email          String?  @db.VarChar(200)
+  contact_number String   @db.VarChar(10)
+  company_id     Int
+  bank_id        Int?
+  account_number String?  @db.VarChar(45)
+  created_at     DateTime @default(now()) @db.DateTime(0)
+  status_id      Int
+  grn            grn[]
+  bank           bank?    @relation(fields: [bank_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_supplier_bank1")
+  company        company  @relation(fields: [company_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_supplier_company1")
+  status         status   @relation(fields: [status_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_supplier_status1")
+
+  @@index([bank_id], map: "fk_supplier_bank1_idx")
+  @@index([company_id], map: "fk_supplier_company1_idx")
+  @@index([status_id], map: "fk_supplier_status1_idx1")
+}
+
+model unit_id {
+  idunit_id                        Int       @id @default(autoincrement())
+  name                             String    @db.VarChar(255)
+  created_at                       DateTime? @default(now()) @db.DateTime(0)
+  product_product_unit_idTounit_id product[] @relation("product_unit_idTounit_id")
+}
+
+model user {
+  id            Int             @id
+  name          String          @db.VarChar(150)
+  contact       String          @db.VarChar(10)
+  email         String?         @db.VarChar(100)
+  password      String          @db.VarChar(100)
+  role_id       Int
+  created_at    DateTime        @db.Date
+  status_id     Int
+  cash_sessions cash_sessions[]
+  quotations    quotation[]
+  role          role            @relation(fields: [role_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_user_role1")
+  status        status          @relation(fields: [status_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_user_status1")
+
+  @@index([role_id], map: "fk_user_role1_idx")
+  @@index([status_id], map: "fk_user_status1_idx")
+}
+
+model quotation {
+  id               Int               @id @default(autoincrement())
+  quotation_number String            @db.VarChar(45)
+  customer_id      Int?
+  sub_total        Float
+  discount         Float
+  total            Float
+  created_at       DateTime          @db.DateTime(0)
+  valid_until      DateTime          @db.Date
+  user_id          Int
+  remarks          String?           @db.Text
+  customer         customer?         @relation(fields: [customer_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  user             user              @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  quotation_items  quotation_items[]
+
+  @@index([customer_id])
+  @@index([user_id])
+}
+
+model quotation_items {
+  id              Int       @id @default(autoincrement())
+  quotation_id    Int
+  stock_id        Int
+  price           Float
+  discount_amount Float
+  qty             Float
+  total           Float
+  quotation       quotation @relation(fields: [quotation_id], references: [id], onDelete: Cascade)
+  stock           stock     @relation(fields: [stock_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([quotation_id])
+  @@index([stock_id])
+}
+
+model subscription {
+  id                Int       @id @default(autoincrement())
+  amount            Float
+  due_date          DateTime  @db.DateTime(0)
+  status            String    @db.VarChar(45)
+  is_paid           Boolean   @default(false)
+  last_payment_date DateTime? @db.DateTime(0)
+  created_at        DateTime  @default(now()) @db.DateTime(0)
+  updated_at        DateTime  @default(now()) @db.DateTime(0)
+}
+
+model db_config {
+  id          Int      @id @default(autoincrement())
+  host        String   @db.VarChar(255)
+  user        String   @db.VarChar(100)
+  password    String   @db.Text
+  database    String   @db.VarChar(100)
+  port        String   @db.VarChar(10)
+  is_active   Boolean  @default(false)
+  mode        String   @default("offline") @db.VarChar(20)
+  created_at  DateTime @default(now()) @db.DateTime(0)
+  updated_at  DateTime @default(now()) @db.DateTime(0)
+}
