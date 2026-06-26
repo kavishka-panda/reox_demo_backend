@@ -21,7 +21,6 @@
     "archiver-zip-encrypted": "^2.0.0",
     "axios": "^1.16.0",
     "bcrypt": "^6.0.0",
-    "better-sqlite3": "^12.6.2",
     "cors": "^2.8.5",
     "dotenv": "^17.2.3",
     "electron-log": "^5.0.0",
