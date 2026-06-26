@@ -2,13 +2,6 @@ const path = require('path');
 const os = require('os');
 const fs = require('fs');
 require('dotenv').config({ path: path.join(__dirname, '.env') });
-const log = require('electron-log');
-
-const roamingDir = process.env.APPDATA || path.join(os.homedir(), 'AppData', 'Roaming');
-const dataSyncLogPath = path.join(roamingDir, 'Reox', 'logs', 'datasync.log');
-fs.mkdirSync(path.dirname(dataSyncLogPath), { recursive: true });
-log.transports.file.resolvePathFn = () => dataSyncLogPath;
-console.log(log.transports.file.getFile().path);
 const { initializeDatabase } = require('./config/dbInitializer');
 const express = require('express');
 const cors = require('cors');
