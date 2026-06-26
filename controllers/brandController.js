@@ -1,4 +1,4 @@
-const Brand = require('../models/BrandModel');
+const Brand = require('../models/brandModel');
 const catchAsync = require('../utils/catchAsync');
 const { AppError } = require('../middleware/errorHandler');
 
