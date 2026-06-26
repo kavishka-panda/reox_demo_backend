@@ -4,12 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "prisma:push": "node scripts/prisma-wrapper.js db push",
-    "prisma:generate": "node scripts/prisma-wrapper.js generate",
-    "prisma:studio": "node scripts/prisma-wrapper.js studio",
-    "prisma:migrate": "node scripts/prisma-wrapper.js migrate",
-    "first-run:init": "node run-first-run-init.js"
+    "start": "node index.js"
   },
   "keywords": [],
   "author": "",
