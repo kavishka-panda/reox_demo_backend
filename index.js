@@ -1,42 +1,11 @@
 const path = require('path');
 const os = require('os');
 const fs = require('fs');
-require('dotenv').config({ path: path.join(__dirname, '.env') });
-
-// Hostinger (Linux Server) එකකද දුවන්නේ කියලා චෙක් කරමු
-const isServer = process.env.NODE_ENV === 'production' || !process.env.APPDATA;
-
-let log;
-let dataSyncLogPath; // මෙතන declare කරලා තියෙනවා
-
-if (!isServer) {
-    // Local / Electron App Environment
-    log = require('electron-log');
-    const roamingDir = process.env.APPDATA || path.join(os.homedir(), 'AppData', 'Roaming');
-    dataSyncLogPath = path.join(roamingDir, 'Reox', 'logs', 'datasync.log'); // const අයින් කරා
-    fs.mkdirSync(path.dirname(dataSyncLogPath), { recursive: true });
-    log.transports.file.resolvePathFn = () => dataSyncLogPath;
-    console.log(log.transports.file.getFile().path);
-} else {
-    // Hostinger Server Environment
-    console.log("🌐 Running on Linux Production Server environment.");
-    
-    dataSyncLogPath = path.join(__dirname, 'logs', 'datasync.log'); // const අයින් කරා
-    fs.mkdirSync(path.dirname(dataSyncLogPath), { recursive: true });
-    
-    log = {
-        info: (...args) => console.log('[INFO]', ...args),
-        error: (...args) => console.error('[ERROR]', ...args),
-        warn: (...args) => console.warn('[WARN]', ...args),
-        transports: { file: {} }
-    };
-}
-
 const roamingDir = process.env.APPDATA || path.join(os.homedir(), 'AppData', 'Roaming');
 const dataSyncLogPath = path.join(roamingDir, 'Reox', 'logs', 'datasync.log');
 fs.mkdirSync(path.dirname(dataSyncLogPath), { recursive: true });
-log.transports.file.resolvePathFn = () => dataSyncLogPath;
-console.log(log.transports.file.getFile().path);
+// log.transports.file.resolvePathFn = () => dataSyncLogPath;
+// console.log(log.transports.file.getFile().path);
 const { initializeDatabase } = require('./config/dbInitializer');
 const express = require('express');
 const cors = require('cors');
