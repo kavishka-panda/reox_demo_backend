@@ -7,30 +7,28 @@ require('dotenv').config({ path: path.join(__dirname, '.env') });
 const isServer = process.env.NODE_ENV === 'production' || !process.env.APPDATA;
 
 let log;
-let dataSyncLogPath;
+let dataSyncLogPath; // මෙතන declare කරලා තියෙනවා
 
 if (!isServer) {
     // Local / Electron App Environment
     log = require('electron-log');
     const roamingDir = process.env.APPDATA || path.join(os.homedir(), 'AppData', 'Roaming');
-    dataSyncLogPath = path.join(roamingDir, 'Reox', 'logs', 'datasync.log');
+    dataSyncLogPath = path.join(roamingDir, 'Reox', 'logs', 'datasync.log'); // const අයින් කරා
     fs.mkdirSync(path.dirname(dataSyncLogPath), { recursive: true });
     log.transports.file.resolvePathFn = () => dataSyncLogPath;
     console.log(log.transports.file.getFile().path);
 } else {
-    // Hostinger Server Environment (සාමාන්‍ය console.log හෝ සරල file log එකක්)
+    // Hostinger Server Environment
     console.log("🌐 Running on Linux Production Server environment.");
     
-    // Server එකේ logs folder එක project directory එක ඇතුලෙන්ම හදන්න
-    dataSyncLogPath = path.join(__dirname, 'logs', 'datasync.log');
+    dataSyncLogPath = path.join(__dirname, 'logs', 'datasync.log'); // const අයින් කරා
     fs.mkdirSync(path.dirname(dataSyncLogPath), { recursive: true });
     
-    // electron-log එක වෙනුවට සරල mock එකක් සේරම console එකට දාන්න
     log = {
         info: (...args) => console.log('[INFO]', ...args),
         error: (...args) => console.error('[ERROR]', ...args),
         warn: (...args) => console.warn('[WARN]', ...args),
-        transports: { file: {} } // crash වීම වැලැක්වීමට empty object එකක්
+        transports: { file: {} }
     };
 }
 
