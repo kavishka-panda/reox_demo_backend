@@ -12,6 +12,10 @@ function getWindowsUUID() {
     }
 }
 
+function getLocalDeviceId() {
+    return process.env.DEVICE_ID || getWindowsUUID();
+}
+
 // Base schedule runs every hour (on the hour)
 const scheduleSubscriptionVerification = () => {
     const cronExpression = '0 * * * *';
@@ -38,9 +42,9 @@ const scheduleSubscriptionVerification = () => {
             }
 
             console.log(`[${new Date().toISOString()}] Running scheduled subscription verification...`);
-            const device_id = getWindowsUUID();
+            const device_id = getLocalDeviceId();
             if (!device_id) {
-                console.log('Subscription verification skipped: unable to resolve device ID');
+                console.log('Subscription verification skipped: unable to resolve device ID. Set DEVICE_ID in the environment for server deployments.');
                 return;
             }
 
