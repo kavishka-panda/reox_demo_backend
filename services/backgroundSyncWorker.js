@@ -186,7 +186,7 @@ class BackgroundSyncWorker {
         const payloadJson = JSON.stringify(payload ?? {});
         await this.localPrisma.$executeRawUnsafe(
             `INSERT INTO \`${OUTBOX_TABLE}\` (\`table_name\`, \`record_id\`, \`action\`, \`payload\`, \`status\`, \`retry_count\`, \`last_error\`, \`created_at\`, \`updated_at\`)
-             VALUES (?, ?, 'INSERT', CAST(? AS JSON), 'pending', 0, NULL, NOW(3), NOW(3))`,
+             VALUES (?, ?, 'INSERT', ?, 'pending', 0, NULL, NOW(3), NOW(3))`,
             tableName,
             String(recordId),
             payloadJson

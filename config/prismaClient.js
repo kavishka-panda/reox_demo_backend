@@ -79,7 +79,7 @@ async function enqueueOutboxEvent(tableName, action, recordId, payload) {
 
     const payloadJson = JSON.stringify(payload ?? {});
     await prisma.$executeRawUnsafe(
-        `INSERT INTO \`${OUTBOX_TABLE}\` (\`table_name\`, \`record_id\`, \`action\`, \`payload\`, \`status\`, \`retry_count\`, \`last_error\`, \`created_at\`, \`updated_at\`) VALUES (?, ?, ?, CAST(? AS JSON), 'pending', 0, NULL, NOW(3), NOW(3))`,
+        `INSERT INTO \`${OUTBOX_TABLE}\` (\`table_name\`, \`record_id\`, \`action\`, \`payload\`, \`status\`, \`retry_count\`, \`last_error\`, \`created_at\`, \`updated_at\`) VALUES (?, ?, ?, ?, 'pending', 0, NULL, NOW(3), NOW(3))`,
         tableName,
         String(recordId),
         action,

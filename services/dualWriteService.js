@@ -47,7 +47,7 @@ class DualWriteService {
         const payloadJson = JSON.stringify(payload ?? {});
 
         await tx.$executeRawUnsafe(
-            `INSERT INTO \`${OUTBOX_TABLE}\` (\`table_name\`, \`record_id\`, \`action\`, \`payload\`, \`status\`, \`retry_count\`, \`last_error\`, \`created_at\`, \`updated_at\`) VALUES (?, ?, ?, CAST(? AS JSON), 'pending', 0, NULL, NOW(3), NOW(3))`,
+            `INSERT INTO \`${OUTBOX_TABLE}\` (\`table_name\`, \`record_id\`, \`action\`, \`payload\`, \`status\`, \`retry_count\`, \`last_error\`, \`created_at\`, \`updated_at\`) VALUES (?, ?, ?, ?, 'pending', 0, NULL, NOW(3), NOW(3))`,
             tableName,
             String(recordId),
             action,
@@ -79,19 +79,19 @@ class DualWriteService {
     async create(tableName, params) {
         return runWithOutboxHandled(() => this.localPrisma.$transaction(async (tx) => {
             return this.createInTx(tx, tableName, params);
-        }));
+        }, { timeout: 30000 }));
     }
 
     async update(tableName, params) {
         return runWithOutboxHandled(() => this.localPrisma.$transaction(async (tx) => {
             return this.updateInTx(tx, tableName, params);
-        }));
+        }, { timeout: 30000 }));
     }
 
     async delete(tableName, params) {
         return runWithOutboxHandled(() => this.localPrisma.$transaction(async (tx) => {
             return this.deleteInTx(tx, tableName, params);
-        }));
+        }, { timeout: 30000 }));
     }
 
     async createMany(tableName, params) {
@@ -105,7 +105,7 @@ class DualWriteService {
             }
 
             return { count };
-        }));
+        }, { timeout: 30000 }));
     }
 
     async updateMany(tableName, params) {
@@ -129,7 +129,7 @@ class DualWriteService {
             }
 
             return { count };
-        }));
+        }, { timeout: 30000 }));
     }
 
     async deleteMany(tableName, params) {
@@ -148,7 +148,7 @@ class DualWriteService {
             }
 
             return { count };
-        }));
+        }, { timeout: 30000 }));
     }
 }
 
