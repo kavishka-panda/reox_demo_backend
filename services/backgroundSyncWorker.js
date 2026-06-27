@@ -37,6 +37,7 @@ const MAX_BATCHES_PER_CYCLE = parseInt(process.env.SYNC_MAX_BATCHES_PER_TABLE) |
 const MAX_OUTBOX_RETRIES = parseInt(process.env.SYNC_OUTBOX_MAX_RETRIES) || 10;
 
 const OUTBOX_TABLE = 'sync_outbox';
+const SYNC_WORKER_ENABLED = process.env.SYNC_WORKER_ENABLED === 'true';
 
 // Primary key mapping for tables with non-standard primary key names
 const PRIMARY_KEY_MAP = {
@@ -395,12 +396,22 @@ class BackgroundSyncWorker {
         }
     }
 
+    isEnabled() {
+        return SYNC_WORKER_ENABLED;
+    }
+
     /**
      * Start the background sync worker
      */
     async start() {
         if (this.isRunning) {
             console.log('⚠️  [SyncWorker] Already running');
+            return;
+        }
+
+        if (!SYNC_WORKER_ENABLED) {
+            console.log('🛑 [SyncWorker] Background sync worker is disabled by configuration; not starting.');
+            this.currentMode = 'offline';
             return;
         }
 
@@ -694,6 +705,11 @@ class BackgroundSyncWorker {
      * Force sync now (manual trigger)
      */
     async forceSyncNow() {
+        if (!SYNC_WORKER_ENABLED) {
+            console.log('🛑 [SyncWorker] Background sync worker is disabled; manual sync skipped.');
+            return;
+        }
+
         console.log('⚡ [SyncWorker] Manual sync triggered');
         await this.runSyncCycle();
     }

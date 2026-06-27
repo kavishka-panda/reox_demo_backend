@@ -17,6 +17,11 @@ async function initializeSyncServices(mode = 'offline') {
         console.log('🔄 Initializing sync services...');
 
         syncWorker.setMode(mode);
+        if (!syncWorker.isEnabled()) {
+            console.log('🛑 Sync services disabled by configuration - background sync worker will stay off');
+            return true;
+        }
+
         console.log('🚀 Starting background sync worker...');
         await syncWorker.start();
         // Start outbox cleanup worker (removes synced rows older than retention period)
@@ -41,6 +46,11 @@ async function initializeSyncServices(mode = 'offline') {
  */
 async function setSyncMode(mode) {
     syncWorker.setMode(mode);
+
+    if (!syncWorker.isEnabled()) {
+        console.log('🛑 Sync mode changed, but background sync worker remains disabled');
+        return;
+    }
 
     // Keep worker running and switch behavior by mode.
     if (!syncWorker.isRunning) {
