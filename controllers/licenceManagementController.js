@@ -1,5 +1,6 @@
 const { execSync } = require('child_process');
 const os = require('os');
+const { randomUUID } = require('crypto');
 const LicenceManagementModel = require('../models/licenceManagementModel');
 
 function getWindowsUUID() {
@@ -10,6 +11,11 @@ function getWindowsUUID() {
         return null;
     }
 }
+
+const getFallbackDeviceId = () => {
+    const device_id = getWindowsUUID();
+    return device_id && device_id.trim() ? device_id : randomUUID();
+};
 
 const validateDevice = async (req, res) => {
     try {
@@ -23,14 +29,7 @@ const validateDevice = async (req, res) => {
             });
         }
 
-        const device_id = getWindowsUUID();
-
-        if (!device_id) {
-            return res.status(500).json({
-                success: false,
-                message: 'Failed to retrieve unique device ID'
-            });
-        }
+        const device_id = getFallbackDeviceId();
 
         const result = await LicenceManagementModel.validateDevice(license_key, device_id);
 
@@ -62,14 +61,7 @@ const verifyOtp = async (req, res) => {
             });
         }
 
-        const device_id = getWindowsUUID();
-
-        if (!device_id) {
-            return res.status(500).json({
-                success: false,
-                message: 'Failed to retrieve unique device ID'
-            });
-        }
+        const device_id = getFallbackDeviceId();
 
         // Get the actual computer name
         const device_name = os.hostname();
@@ -93,7 +85,8 @@ const verifyOtp = async (req, res) => {
 
 const getProfile = async (req, res) => {
     try {
-        const device_id = req?.body?.device_id || req?.query?.device_id || req?.headers?.['device-id'] || getWindowsUUID() || '';
+        const rawDeviceId = req?.body?.device_id || req?.query?.device_id || req?.headers?.['device-id'];
+        const device_id = rawDeviceId && String(rawDeviceId).trim() ? rawDeviceId : getFallbackDeviceId();
         const profileData = await LicenceManagementModel.getProfile(device_id);
 
         res.json({
@@ -116,7 +109,8 @@ const getProfile = async (req, res) => {
 
 const getCustomerSubscription = async (req, res) => {
     try {
-        const device_id = req?.body?.device_id || req?.query?.device_id || req?.headers?.['device-id'] || getWindowsUUID() || '';
+        const rawDeviceId = req?.body?.device_id || req?.query?.device_id || req?.headers?.['device-id'];
+        const device_id = rawDeviceId && String(rawDeviceId).trim() ? rawDeviceId : getFallbackDeviceId();
         const subscriptionData = await LicenceManagementModel.getCustomerSubscription(device_id);
 
         res.json({
@@ -165,14 +159,7 @@ const resendOtp = async (req, res) => {
             });
         }
 
-        const device_id = getWindowsUUID();
-
-        if (!device_id) {
-            return res.status(500).json({
-                success: false,
-                message: 'Failed to retrieve unique device ID'
-            });
-        }
+        const device_id = getFallbackDeviceId();
 
         // Get the actual computer name
         const device_name = os.hostname();
