@@ -85,7 +85,7 @@ app.use(cors({
 }));
 
 // Pre-flight OPTIONS requests සඳහා
-app.options('*', cors());
+app.options('/*', cors());
 
 const authRoutes = require('./routes/auth');
 app.use(express.json());
