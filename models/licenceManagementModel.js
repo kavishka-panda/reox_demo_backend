@@ -2,6 +2,7 @@ const prisma = require("../config/prismaClient");
 const axios = require("axios");
 const fs = require("fs");
 const path = require("path");
+const { randomUUID } = require("crypto");
 
 const TOKEN_PATH = path.join(__dirname, '..', 'config', 'license_token.json');
 
@@ -27,6 +28,14 @@ class LicenceManagementModel {
             throw new Error('SUBSCRIPTION_CHECK_API is not configured.');
         }
         return rawBaseUrl.replace(/\/$/, '');
+    }
+
+    static generateDeviceId(deviceId = '') {
+        const trimmed = typeof deviceId === 'string' ? deviceId.trim() : '';
+        if (trimmed) {
+            return trimmed;
+        }
+        return randomUUID();
     }
 
     // -----------------------------------------------------------------
@@ -106,12 +115,13 @@ class LicenceManagementModel {
      */
     static async validateDevice(licenseKey, deviceId) {
         try {
+            const resolvedDeviceId = this.generateDeviceId(deviceId);
             const baseUrl = this.getSubscriptionApiBaseUrl();
             const apiUrl = `${baseUrl}/api/license/validate`;
 
             const response = await axios.post(apiUrl, {
                 license_key: licenseKey,
-                device_id: deviceId
+                device_id: resolvedDeviceId
             });
 
             const responseData = response.data;
@@ -120,7 +130,7 @@ class LicenceManagementModel {
                 responseData?.data?.access_token;
             if (accessToken) {
                 LicenceManagementModel.storeAccessToken(accessToken);
-                await LicenceManagementModel.getProfile(deviceId);
+                await LicenceManagementModel.getProfile(resolvedDeviceId);
             }
 
             return LicenceManagementModel.sanitizeFrontendResponse(responseData);
@@ -148,12 +158,13 @@ class LicenceManagementModel {
      */
     static async verifyOtp(licenseKey, deviceId, otp, deviceName) {
         try {
+            const resolvedDeviceId = this.generateDeviceId(deviceId);
             const baseUrl = this.getSubscriptionApiBaseUrl();
             const apiUrl = `${baseUrl}/api/license/verify-otp`;
 
             const response = await axios.post(apiUrl, {
                 license_key: licenseKey,
-                device_id: deviceId,
+                device_id: resolvedDeviceId,
                 otp: otp,
                 device_name: deviceName
             });
@@ -164,7 +175,7 @@ class LicenceManagementModel {
                 responseData?.data?.access_token;
             if (accessToken) {
                 LicenceManagementModel.storeAccessToken(accessToken);
-                await LicenceManagementModel.getProfile(deviceId);
+                await LicenceManagementModel.getProfile(resolvedDeviceId);
             }
 
             return LicenceManagementModel.sanitizeFrontendResponse(responseData);
@@ -228,8 +239,9 @@ class LicenceManagementModel {
      */
     static async getProfile(deviceId = '') {
         try {
+            const resolvedDeviceId = this.generateDeviceId(deviceId);
             if (!deviceId) {
-                console.error("Device ID is missing in getProfile call");
+                console.warn("Device ID is missing in getProfile call; generated a random ID:", resolvedDeviceId);
             }
 
             const token = this.getStoredAccessToken();
@@ -244,11 +256,11 @@ class LicenceManagementModel {
             const response = await axios.get(apiUrl, {
                 headers: {
                     Authorization: `Bearer ${token}`,
-                    'device-id': deviceId,
+                    'device-id': resolvedDeviceId,
                     Accept: 'application/json'
                 },
                 params: {
-                    device_id: deviceId
+                    device_id: resolvedDeviceId
                 }
             });
 
