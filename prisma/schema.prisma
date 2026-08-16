@@ -1,5 +1,5 @@
 generator client {
-  provider      = "prisma-client-js"
+  provider = "prisma-client-js"
   binaryTargets = ["native", "debian-openssl-1.1.x", "debian-openssl-3.0.x"]
 }
 
@@ -11,7 +11,8 @@ datasource db {
 model bank {
   id          Int        @id @default(autoincrement())
   bank_name   String     @db.VarChar(100)
-  updated_at  DateTime   @updatedAt
+  updated_at  DateTime @default(now()) @updatedAt
+  sync_status String @default("pending") @db.VarChar(20)
   supplier    supplier[]
 }
 
@@ -19,7 +20,8 @@ model batch {
   id          Int      @id @default(autoincrement())
   batch_name  String   @db.VarChar(45)
   date_time   DateTime @default(now()) @db.DateTime(0)
-  updated_at  DateTime @updatedAt
+  updated_at  DateTime @default(now()) @updatedAt
+  sync_status String @default("pending") @db.VarChar(20)
   stock       stock[]
 }
 
@@ -27,7 +29,8 @@ model brand {
   idbrand     Int       @id @default(autoincrement())
   name        String    @db.VarChar(255)
   created_at  DateTime? @default(now()) @db.DateTime(0)
-  updated_at  DateTime  @updatedAt
+  updated_at  DateTime @default(now()) @updatedAt
+  sync_status String @default("pending") @db.VarChar(20)
   product     product[]
 }
 
@@ -41,7 +44,8 @@ model cash_sessions {
   bank_total          Float
   cashier_counters_id Int
   cash_status_id      Int
-  updated_at          DateTime         @updatedAt
+  updated_at  DateTime @default(now()) @updatedAt
+  sync_status String @default("pending") @db.VarChar(20)
   cash_status         cash_status      @relation(fields: [cash_status_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_cash_sessions_cash_status1")
   cashier_counters    cashier_counters @relation(fields: [cashier_counters_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_cash_sessions_cashier_counters1")
   user                user             @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_cash_sessions_user1")
@@ -57,14 +61,16 @@ model cash_sessions {
 model cash_status {
   id            Int             @id @default(autoincrement())
   cash_status   String          @db.VarChar(45)
-  updated_at    DateTime        @updatedAt
+  updated_at  DateTime @default(now()) @updatedAt
+  sync_status String @default("pending") @db.VarChar(20)
   cash_sessions cash_sessions[]
 }
 
 model cashier_counters {
   id              Int             @id @default(autoincrement())
   cashier_counter String          @db.VarChar(100)
-  updated_at      DateTime        @updatedAt
+  updated_at  DateTime @default(now()) @updatedAt
+  sync_status String @default("pending") @db.VarChar(20)
   cash_sessions   cash_sessions[]
 }
 
@@ -72,7 +78,8 @@ model category {
   idcategory  Int       @id @default(autoincrement())
   name        String    @db.VarChar(255)
   created_at  DateTime? @default(now()) @db.DateTime(0)
-  updated_at  DateTime  @updatedAt
+  updated_at  DateTime @default(now()) @updatedAt
+  sync_status String @default("pending") @db.VarChar(20)
   product     product[]
 }
 
@@ -82,7 +89,8 @@ model company {
   company_email   String?    @db.VarChar(100)
   company_contact String     @db.VarChar(45)
   created_at      DateTime   @default(now()) @db.DateTime(0)
-  updated_at      DateTime   @updatedAt
+  updated_at  DateTime @default(now()) @updatedAt
+  sync_status String @default("pending") @db.VarChar(20)
   supplier        supplier[]
 }
 
@@ -92,7 +100,8 @@ model creadit_book {
   balance                Float
   status_id              Int
   created_at             DateTime                 @db.DateTime(0)
-  updated_at             DateTime                 @updatedAt
+  updated_at  DateTime @default(now()) @updatedAt
+  sync_status String @default("pending") @db.VarChar(20)
   invoice                invoice                  @relation(fields: [invoice_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_creadit_book_invoice1")
   status                 status                   @relation(fields: [status_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_creadit_book_status1")
   credit_payment_history credit_payment_history[]
@@ -106,7 +115,8 @@ model credit_payment_history {
   creadit_book_id Int
   amount          Float
   payment_date    DateTime     @default(now()) @db.DateTime(0)
-  updated_at      DateTime     @updatedAt
+  updated_at  DateTime @default(now()) @updatedAt
+  sync_status String @default("pending") @db.VarChar(20)
   creadit_book    creadit_book @relation(fields: [creadit_book_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_credit_payment_history_creadit_book1")
 
   @@index([creadit_book_id], map: "fk_credit_payment_history_creadit_book1_idx")
@@ -119,7 +129,8 @@ model customer {
   email       String?     @db.VarChar(45)
   status_id   Int
   created_at  DateTime    @default(now()) @db.DateTime(0)
-  updated_at  DateTime    @updatedAt
+  updated_at  DateTime @default(now()) @updatedAt
+  sync_status String @default("pending") @db.VarChar(20)
   status      status      @relation(fields: [status_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_customer_status1")
   invoice     invoice[]
   quotations  quotation[]
@@ -135,7 +146,8 @@ model damaged {
   description      String        @db.Text
   date             DateTime      @db.Date
   return_status_id Int
-  updated_at       DateTime      @updatedAt
+  updated_at  DateTime @default(now()) @updatedAt
+  sync_status String @default("pending") @db.VarChar(20)
   return_status    return_status @relation(fields: [return_status_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_damaged_return_status1")
   reason           reason        @relation(fields: [reason_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_return_reason1")
   stock            stock         @relation(fields: [stock_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_return_stock1")
@@ -148,7 +160,8 @@ model damaged {
 model exchange_type {
   id             Int              @id @default(autoincrement())
   exchange_type  String           @db.VarChar(45)
-  updated_at     DateTime         @updatedAt
+  updated_at  DateTime @default(now()) @updatedAt
+  sync_status String @default("pending") @db.VarChar(20)
   money_exchange money_exchange[]
 }
 
@@ -161,7 +174,8 @@ model grn {
   balance       Float
   grn_status_id Int
   create_at     DateTime       @default(now()) @db.DateTime(0)
-  updated_at    DateTime       @updatedAt
+  updated_at  DateTime @default(now()) @updatedAt
+  sync_status String @default("pending") @db.VarChar(20)
   status        status         @relation(fields: [grn_status_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_grn_grn_status1")
   supplier      supplier       @relation(fields: [supplier_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_grn_supplier1")
   grn_items     grn_items[]
@@ -177,7 +191,8 @@ model grn_items {
   stock_id    Int
   qty         Float
   free_qty    Float?
-  updated_at  DateTime @updatedAt
+  updated_at  DateTime @default(now()) @updatedAt
+  sync_status String @default("pending") @db.VarChar(20)
   grn         grn      @relation(fields: [grn_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_grn_items_grn1")
   stock       stock    @relation(fields: [stock_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_grn_items_stock1")
 
@@ -191,7 +206,8 @@ model grn_payments {
   payment_types_id Int
   grn_id           Int
   created_at       DateTime      @default(now()) @db.DateTime(0)
-  updated_at       DateTime      @updatedAt
+  updated_at  DateTime @default(now()) @updatedAt
+  sync_status String @default("pending") @db.VarChar(20)
   grn              grn           @relation(fields: [grn_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_grn_payments_grn1")
   payment_types    payment_types @relation(fields: [payment_types_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_grn_payments_payment_types1")
 
@@ -211,7 +227,8 @@ model invoice {
   created_at       DateTime           @db.DateTime(0)
   cash_sessions_id Int
   invoice_type_id  Int
-  updated_at       DateTime           @updatedAt
+  updated_at  DateTime @default(now()) @updatedAt
+  sync_status String @default("pending") @db.VarChar(20)
   creadit_book     creadit_book[]
   cash_sessions    cash_sessions      @relation(fields: [cash_sessions_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_invoice_cash_sessions1")
   customer         customer?          @relation(fields: [customer_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_invoice_customer1")
@@ -234,7 +251,8 @@ model invoice_items {
   discount_amount     Float
   qty                 Float
   returned_qty        Float    @default(0)
-  updated_at          DateTime @updatedAt
+  updated_at  DateTime @default(now()) @updatedAt
+  sync_status String @default("pending") @db.VarChar(20)
   invoice             invoice  @relation(fields: [invoice_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_inoice_items_invoice1")
   stock               stock    @relation(fields: [stock_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_inoice_items_stock1")
 
@@ -245,7 +263,8 @@ model invoice_items {
 model invoice_type {
   id           Int       @id @default(autoincrement())
   Invoice_type String    @db.VarChar(45)
-  updated_at   DateTime  @updatedAt
+  updated_at  DateTime @default(now()) @updatedAt
+  sync_status String @default("pending") @db.VarChar(20)
   invoice      invoice[]
 }
 
@@ -256,7 +275,8 @@ model money_exchange {
   amount            Float
   reason            String        @db.Text
   datetime          DateTime      @db.DateTime(0)
-  updated_at        DateTime      @updatedAt
+  updated_at  DateTime @default(now()) @updatedAt
+  sync_status String @default("pending") @db.VarChar(20)
   cash_sessions     cash_sessions @relation(fields: [cash_sessions_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_money_exchange_cash_sessions1")
   exchange_type     exchange_type @relation(fields: [exchange_type_id1], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_money_exchange_exchange_type1")
 
@@ -270,7 +290,8 @@ model invoice_payments {
   payment_types_id Int
   amount           Float
   payment_date     DateTime      @default(now()) @db.DateTime(0)
-  updated_at       DateTime      @updatedAt
+  updated_at  DateTime @default(now()) @updatedAt
+  sync_status String @default("pending") @db.VarChar(20)
   invoice          invoice       @relation(fields: [invoice_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_invoice_payments_invoice1")
   payment_types    payment_types @relation(fields: [payment_types_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_invoice_payments_payment_types1")
 
@@ -281,7 +302,8 @@ model invoice_payments {
 model payment_types {
   id               Int                @id @default(autoincrement())
   payment_types    String             @db.VarChar(45)
-  updated_at       DateTime           @updatedAt
+  updated_at  DateTime @default(now()) @updatedAt
+  sync_status String @default("pending") @db.VarChar(20)
   grn_payments     grn_payments[]
   invoice_payments invoice_payments[]
 }
@@ -295,7 +317,8 @@ model product {
   unit_id                          Int
   product_type_id                  Int
   created_at                       DateTime?            @default(now()) @db.DateTime(0)
-  updated_at                       DateTime             @updatedAt
+  updated_at  DateTime @default(now()) @updatedAt
+  sync_status String @default("pending") @db.VarChar(20)
   brand                            brand                @relation(fields: [brand_id], references: [idbrand], onDelete: NoAction, onUpdate: NoAction, map: "fk_product_brand1")
   category                         category             @relation(fields: [category_id], references: [idcategory], onDelete: NoAction, onUpdate: NoAction, map: "fk_product_category")
   product_type                     product_type         @relation(fields: [product_type_id], references: [idproduct_type], onDelete: NoAction, onUpdate: NoAction, map: "fk_product_product_type1")
@@ -311,7 +334,8 @@ model product {
 model product_status {
   idproduct_status   Int                  @id @default(autoincrement())
   status_name        String               @db.VarChar(45)
-  updated_at         DateTime             @updatedAt
+  updated_at  DateTime @default(now()) @updatedAt
+  sync_status String @default("pending") @db.VarChar(20)
   product_variations product_variations[]
 }
 
@@ -319,7 +343,8 @@ model product_type {
   idproduct_type Int       @id @default(autoincrement())
   name           String    @db.VarChar(45)
   created_at     DateTime? @default(now()) @db.DateTime(0)
-  updated_at     DateTime  @updatedAt
+  updated_at  DateTime @default(now()) @updatedAt
+  sync_status String @default("pending") @db.VarChar(20)
   product        product[]
 }
 
@@ -332,7 +357,8 @@ model product_variations {
   storage_capacity  String?        @db.VarChar(45)
   product_status_id Int
   created_at        DateTime?      @default(now()) @db.DateTime(0)
-  updated_at        DateTime       @updatedAt
+  updated_at  DateTime @default(now()) @updatedAt
+  sync_status String @default("pending") @db.VarChar(20)
   product           product        @relation(fields: [product_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_product_variations_product1")
   product_status    product_status @relation(fields: [product_status_id], references: [idproduct_status], onDelete: NoAction, onUpdate: NoAction, map: "fk_product_variations_product_status1")
   stock             stock[]
@@ -344,7 +370,8 @@ model product_variations {
 model reason {
   id          Int       @id @default(autoincrement())
   reason      String    @db.Text
-  updated_at  DateTime  @updatedAt
+  updated_at  DateTime @default(now()) @updatedAt
+  sync_status String @default("pending") @db.VarChar(20)
   damaged     damaged[]
 }
 
@@ -354,7 +381,8 @@ model Return {
   damaged_id  Int
   qty         Float
   date        DateTime @db.DateTime(0)
-  updated_at  DateTime @updatedAt
+  updated_at  DateTime @default(now()) @updatedAt
+  sync_status String @default("pending") @db.VarChar(20)
 
   @@index([damaged_id], map: "fk_return_damaged1_idx")
   @@map("return")
@@ -365,7 +393,8 @@ model return_goods {
   invoice_id       Int
   cash_sessions_id Int
   balance          Float
-  updated_at       DateTime      @updatedAt
+  updated_at  DateTime @default(now()) @updatedAt
+  sync_status String @default("pending") @db.VarChar(20)
   cash_sessions    cash_sessions @relation(fields: [cash_sessions_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_return_goods_cash_sessions1")
   invoice          invoice       @relation(fields: [invoice_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_return_goods_invoice1")
 
@@ -376,21 +405,24 @@ model return_goods {
 model return_status {
   id            Int       @id @default(autoincrement())
   return_status String    @db.VarChar(50)
-  updated_at    DateTime  @updatedAt
+  updated_at  DateTime @default(now()) @updatedAt
+  sync_status String @default("pending") @db.VarChar(20)
   damaged       damaged[]
 }
 
 model role {
   id          Int      @id @default(autoincrement())
   user_role   String   @db.VarChar(45)
-  updated_at  DateTime @updatedAt
+  updated_at  DateTime @default(now()) @updatedAt
+  sync_status String @default("pending") @db.VarChar(20)
   user        user[]
 }
 
 model status {
   id           Int            @id @default(autoincrement())
   ststus       String         @db.VarChar(45)
-  updated_at   DateTime       @updatedAt
+  updated_at  DateTime @default(now()) @updatedAt
+  sync_status String @default("pending") @db.VarChar(20)
   creadit_book creadit_book[]
   customer     customer[]
   grn          grn[]
@@ -411,7 +443,8 @@ model stock {
   wsp                   Float?
   qty                   Float
   free_qty              Float?
-  updated_at            DateTime           @updatedAt
+  updated_at  DateTime @default(now()) @updatedAt
+  sync_status String @default("pending") @db.VarChar(20)
   damaged               damaged[]
   grn_items             grn_items[]
   invoice_items         invoice_items[]
@@ -433,7 +466,8 @@ model supplier {
   account_number String?  @db.VarChar(45)
   created_at     DateTime @default(now()) @db.DateTime(0)
   status_id      Int
-  updated_at     DateTime @updatedAt
+  updated_at  DateTime @default(now()) @updatedAt
+  sync_status String @default("pending") @db.VarChar(20)
   grn            grn[]
   bank           bank?    @relation(fields: [bank_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_supplier_bank1")
   company        company  @relation(fields: [company_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_supplier_company1")
@@ -448,7 +482,8 @@ model unit_id {
   idunit_id                        Int       @id @default(autoincrement())
   name                             String    @db.VarChar(255)
   created_at                       DateTime? @default(now()) @db.DateTime(0)
-  updated_at                       DateTime  @updatedAt
+  updated_at  DateTime @default(now()) @updatedAt
+  sync_status String @default("pending") @db.VarChar(20)
   product_product_unit_idTounit_id product[] @relation("product_unit_idTounit_id")
 }
 
@@ -461,7 +496,8 @@ model user {
   role_id       Int
   created_at    DateTime        @db.Date
   status_id     Int
-  updated_at    DateTime        @updatedAt
+  updated_at  DateTime @default(now()) @updatedAt
+  sync_status String @default("pending") @db.VarChar(20)
   cash_sessions cash_sessions[]
   quotations    quotation[]
   role          role            @relation(fields: [role_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_user_role1")
@@ -482,7 +518,8 @@ model quotation {
   valid_until      DateTime          @db.Date
   user_id          Int
   remarks          String?           @db.Text
-  updated_at       DateTime          @updatedAt
+  updated_at  DateTime @default(now()) @updatedAt
+  sync_status String @default("pending") @db.VarChar(20)
   customer         customer?         @relation(fields: [customer_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
   user             user              @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
   quotation_items  quotation_items[]
@@ -499,7 +536,8 @@ model quotation_items {
   discount_amount Float
   qty             Float
   total           Float
-  updated_at      DateTime  @updatedAt
+  updated_at  DateTime @default(now()) @updatedAt
+  sync_status String @default("pending") @db.VarChar(20)
   quotation       quotation @relation(fields: [quotation_id], references: [id], onDelete: Cascade)
   stock           stock     @relation(fields: [stock_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
 
@@ -540,9 +578,19 @@ model sync_outbox {
   retry_count Int     @default(0)
   last_error  String? @db.Text
   created_at  DateTime @default(now()) @db.DateTime(3)
-  updated_at  DateTime @updatedAt @db.DateTime(3)
+  updated_at  DateTime @default(now()) @updatedAt @db.DateTime(3)
 
   @@index([status, created_at], map: "idx_sync_outbox_status_created_at")
   @@index([table_name, record_id], map: "idx_sync_outbox_table_record")
   @@index([action, status], map: "idx_sync_outbox_action_status")
+}
+
+model test_table {
+  id         Int      @id @default(autoincrement())
+  test_name  String   @db.VarChar(100)
+  test_code  String   @unique @db.VarChar(50)
+  is_active  Boolean  @default(true)
+  created_at DateTime @default(now())
+
+  @@map("test_table") // Database එකේ Table එකේ නම lowercase වලින්ම තබා ගැනීමට
 }

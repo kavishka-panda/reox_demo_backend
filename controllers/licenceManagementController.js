@@ -11,10 +11,6 @@ function getWindowsUUID() {
     }
 }
 
-function getDeviceId(req = {}) {
-    return req?.body?.device_id || req?.query?.device_id || req?.headers?.['device-id'] || process.env.DEVICE_ID || getWindowsUUID();
-}
-
 const validateDevice = async (req, res) => {
     try {
         const { license_key } = req.body;
@@ -27,12 +23,12 @@ const validateDevice = async (req, res) => {
             });
         }
 
-        const device_id = getDeviceId(req);
+        const device_id = getWindowsUUID();
 
         if (!device_id) {
             return res.status(500).json({
                 success: false,
-                message: 'Failed to retrieve unique device ID. Provide device_id in the request or set DEVICE_ID in the environment.'
+                message: 'Failed to retrieve unique device ID'
             });
         }
 
@@ -66,12 +62,12 @@ const verifyOtp = async (req, res) => {
             });
         }
 
-        const device_id = getDeviceId(req);
+        const device_id = getWindowsUUID();
 
         if (!device_id) {
             return res.status(500).json({
                 success: false,
-                message: 'Failed to retrieve unique device ID. Provide device_id in the request or set DEVICE_ID in the environment.'
+                message: 'Failed to retrieve unique device ID'
             });
         }
 
@@ -97,7 +93,7 @@ const verifyOtp = async (req, res) => {
 
 const getProfile = async (req, res) => {
     try {
-        const device_id = getDeviceId(req) || '';
+        const device_id = req?.body?.device_id || req?.query?.device_id || req?.headers?.['device-id'] || getWindowsUUID() || '';
         const profileData = await LicenceManagementModel.getProfile(device_id);
 
         res.json({
@@ -120,7 +116,7 @@ const getProfile = async (req, res) => {
 
 const getCustomerSubscription = async (req, res) => {
     try {
-        const device_id = getDeviceId(req) || '';
+        const device_id = req?.body?.device_id || req?.query?.device_id || req?.headers?.['device-id'] || getWindowsUUID() || '';
         const subscriptionData = await LicenceManagementModel.getCustomerSubscription(device_id);
 
         res.json({
@@ -169,12 +165,12 @@ const resendOtp = async (req, res) => {
             });
         }
 
-        const device_id = getDeviceId(req);
+        const device_id = getWindowsUUID();
 
         if (!device_id) {
             return res.status(500).json({
                 success: false,
-                message: 'Failed to retrieve unique device ID. Provide device_id in the request or set DEVICE_ID in the environment.'
+                message: 'Failed to retrieve unique device ID'
             });
         }
 

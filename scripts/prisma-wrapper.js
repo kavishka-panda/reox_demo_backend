@@ -1,4 +1,5 @@
 const { spawn } = require('child_process');
+const fs = require('fs');
 const path = require('path');
 require('dotenv').config({ path: path.resolve(__dirname, '../.env') });
 
@@ -15,9 +16,11 @@ const databaseUrl = `mysql://${DB_USER}:${encodedPassword}@${DB_HOST}:${dbPort}/
 
 const env = { ...process.env, DATABASE_URL: databaseUrl };
 const args = process.argv.slice(2);
+const schemaPath = path.resolve(__dirname, '../prisma/schema.prisma');
+const schemaArgs = fs.existsSync(schemaPath) ? ['--schema', schemaPath] : [];
 
 // Use shell: true to let the OS handle command resolution
-const child = spawn('npx', ['prisma', ...args], { 
+const child = spawn('npx', ['prisma', ...args, ...schemaArgs], { 
     env, 
     stdio: 'inherit',
     cwd: path.resolve(__dirname, '..'), // Run in backend root

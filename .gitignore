@@ -1,4 +1,4 @@
 node_modules
 /generated/prisma
+dist/
 .env
-config/license_token.json

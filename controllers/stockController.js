@@ -102,6 +102,7 @@ exports.getSearchStock = catchAsync(async (req, res, next) => {
             category: req.query.category,
             unit: req.query.unit,
             supplier: req.query.supplier,
+            batchName: req.query.batchName || req.query.batch,
             searchQuery: req.query.q,
             limit: req.query.limit
         };

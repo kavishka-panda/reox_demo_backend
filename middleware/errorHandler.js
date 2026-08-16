@@ -89,6 +89,45 @@ const globalErrorHandler = (err, req, res, next) => {
         });
     }
 
+    // Handle Prisma database connection errors (MySQL server stopped / unreachable)
+    const dbConnectionCodes = ['P1001', 'P1002', 'P1008', 'P1009', 'P1010', 'P1017'];
+    if (dbConnectionCodes.includes(err.code)) {
+        console.error('🔴 Database connection lost:', err.message);
+        
+        // Force Prisma to disconnect and clear stale connection pool.
+        // It will automatically reconnect on the next query.
+        try {
+            const prisma = require('../config/prismaClient');
+            prisma.$disconnect().catch(e => console.error('Error during forced Prisma disconnect:', e.message));
+        } catch (e) {
+            console.error('Failed to trigger Prisma disconnect:', e.message);
+        }
+
+        return res.status(503).json({
+            success: false,
+            message: 'Database server is unavailable. Please ensure MySQL is running and try again.',
+            code: err.code
+        });
+    }
+
+    // Handle Node.js level connection refused errors (e.g. ECONNREFUSED)
+    if (err.message && (err.message.includes('ECONNREFUSED') || err.message.includes('connect ETIMEDOUT') || err.message.includes('ENOTFOUND'))) {
+        console.error('🔴 Network/DB connection error:', err.message);
+        
+        // Force Prisma disconnect here as well, just in case
+        try {
+            const prisma = require('../config/prismaClient');
+            prisma.$disconnect().catch(e => console.error('Error during forced Prisma disconnect:', e.message));
+        } catch (e) {
+            console.error('Failed to trigger Prisma disconnect:', e.message);
+        }
+
+        return res.status(503).json({
+            success: false,
+            message: 'Cannot connect to database. Please ensure MySQL is running and try again.'
+        });
+    }
+
     if (process.env.NODE_ENV === 'development' || !process.env.NODE_ENV) {
         res.status(err.statusCode).json({
             success: false,

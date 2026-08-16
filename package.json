@@ -1,10 +1,16 @@
 {
   "name": "backend",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "node index.js"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "prisma:push": "node scripts/prisma-wrapper.js db push",
+    "prisma:generate": "node scripts/prisma-wrapper.js generate",
+    "prisma:studio": "node scripts/prisma-wrapper.js studio",
+    "prisma:migrate": "node scripts/prisma-wrapper.js migrate",
+    "first-run:init": "node run-first-run-init.js",
+    "bundle": "node bundle.js"
   },
   "keywords": [],
   "author": "",
@@ -16,6 +22,7 @@
     "archiver-zip-encrypted": "^2.0.0",
     "axios": "^1.16.0",
     "bcrypt": "^6.0.0",
+    "better-sqlite3": "^12.6.2",
     "cors": "^2.8.5",
     "dotenv": "^17.2.3",
     "electron-log": "^5.0.0",
@@ -32,7 +39,9 @@
     "xlsx": "https://cdn.sheetjs.com/xlsx-latest/xlsx-latest.tgz"
   },
   "devDependencies": {
-    "@types/node-cron": "^3.0.11"
+    "@types/node-cron": "^3.0.11",
+    "esbuild": "^0.28.1",
+    "javascript-obfuscator": "^5.4.3"
   },
   "prisma": {
     "seed": "node prisma/seed.js"

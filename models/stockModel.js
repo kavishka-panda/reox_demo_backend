@@ -123,6 +123,15 @@ class Stock {
             };
         }
 
+        if (filters.batchName || filters.batch) {
+            const batchQuery = (filters.batchName || filters.batch).toString().trim();
+            whereClause.batch = {
+                batch_name: {
+                    contains: batchQuery
+                }
+            };
+        }
+
         if (filters.searchQuery) {
             const query = filters.searchQuery.toLowerCase();
             whereClause.OR = [

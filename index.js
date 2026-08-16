@@ -1,11 +1,27 @@
+// ============================================
+// NORMAL SERVER START
+// ============================================
 const path = require('path');
 const os = require('os');
 const fs = require('fs');
-const roamingDir = process.env.APPDATA || path.join(os.homedir(), 'AppData', 'Roaming');
-const dataSyncLogPath = path.join(roamingDir, 'Reox', 'logs', 'datasync.log');
-fs.mkdirSync(path.dirname(dataSyncLogPath), { recursive: true });
-// log.transports.file.resolvePathFn = () => dataSyncLogPath;
-// console.log(log.transports.file.getFile().path);
+
+// ✅ Must be BEFORE any require('electron-log')
+process.env.ELECTRON_APP_NAME = 'Reox POS';
+const log = require('electron-log');
+
+// Optional: wrap file transport setup in try-catch to be safe
+try {
+  const roamingDir = process.env.APPDATA || path.join(os.homedir(), 'AppData', 'Roaming');
+  const dataSyncLogPath = path.join(roamingDir, 'Reox', 'logs', 'datasync.log');
+  fs.mkdirSync(path.dirname(dataSyncLogPath), { recursive: true });
+  log.transports.file.resolvePathFn = () => dataSyncLogPath;
+} catch (e) {
+  console.error('Failed to configure electron-log file transport:', e.message);
+}
+
+const { loadEnv } = require('./loadEnv');
+loadEnv();
+
 const { initializeDatabase } = require('./config/dbInitializer');
 const express = require('express');
 const cors = require('cors');
@@ -48,7 +64,7 @@ const { initializeSyncServices, cleanupSyncServices } = require('./middleware/sy
 // Middleware
 const app = express();
 app.use(cors({
-    origin: ['https://demo.reox.lk','http://localhost:5173', 'http://localhost:5174', 'http://127.0.0.1:5173'],
+    origin: ['http://localhost:5173', 'http://localhost:5174', 'http://127.0.0.1:5173'],
     credentials: true
 }));
 const authRoutes = require('./routes/auth');

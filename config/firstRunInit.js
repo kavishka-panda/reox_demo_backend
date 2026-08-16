@@ -116,7 +116,9 @@ async function performFirstRunInit(appDataPath) {
         const databaseUrl = `mysql://${dbUser}:${encodeURIComponent(dbPassword)}@${dbHost}:${dbPort}/${dbName}`;
 
         try {
-            const { stdout, stderr } = await execPromise('npx prisma db push --accept-data-loss --skip-generate', {
+            const schemaPath = path.join(backendPath, 'prisma', 'schema.prisma');
+            const schemaArg = fs.existsSync(schemaPath) ? `--schema "${schemaPath}"` : '';
+            const { stdout, stderr } = await execPromise(`npx prisma db push --accept-data-loss --skip-generate ${schemaArg}`.trim(), {
                 cwd: backendPath,
                 env: {
                     ...process.env,
@@ -139,7 +141,8 @@ async function performFirstRunInit(appDataPath) {
         console.log('\n🔧 Step 5: Generating Prisma Client...');
 
         try {
-            const { stdout, stderr } = await execPromise('npx prisma generate', {
+            const schemaArg = fs.existsSync(schemaPath) ? `--schema "${schemaPath}"` : '';
+            const { stdout, stderr } = await execPromise(`npx prisma generate ${schemaArg}`.trim(), {
                 cwd: backendPath,
                 env: {
                     ...process.env,

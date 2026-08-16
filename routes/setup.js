@@ -81,7 +81,9 @@ router.post('/test-connection', async (req, res) => {
         const projectRoot = path.join(__dirname, '..');
 
         // Command to run prisma db push and then seed
-        const command = `npx prisma db push --accept-data-loss && node prisma/seed.js`;
+        const schemaPath = path.join(projectRoot, 'prisma', 'schema.prisma');
+        const schemaArg = fs.existsSync(schemaPath) ? `--schema "${schemaPath}"` : '';
+        const command = `npx prisma db push ${schemaArg} --accept-data-loss && node prisma/seed.js`;
 
         console.log(`Executing command: ${command} in ${projectRoot}`);
         console.log(`Using DATABASE_URL: ${databaseUrl}`);

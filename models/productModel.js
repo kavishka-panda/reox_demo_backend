@@ -5,7 +5,7 @@ class Product {
     // Using raw query for dynamic table names to match previous behavior safely
     const result = await prisma.$queryRawUnsafe(
       `SELECT 1 FROM ${tableName} WHERE ${idColumn} = ? LIMIT 1`,
-      idValue
+      idValue,
     );
     // Result is an array of objects.
     // If returning BigInt, serialize it. But standard check just needs length.
@@ -14,13 +14,13 @@ class Product {
 
   static async getVariationById(id) {
     return await prisma.product_variations.findUnique({
-        where: { id: parseInt(id) }
+      where: { id: parseInt(id) },
     });
   }
 
   static async getProductByCode(code) {
     return await prisma.product.findUnique({
-        where: { product_code: code }
+      where: { product_code: code },
     });
   }
 
@@ -30,13 +30,15 @@ class Product {
         let batchId = null;
 
         // Check if any variation has initial stock
-        const hasInitialStock = variations.some(v => v.initialQty && Number(v.initialQty) > 0);
+        const hasInitialStock = variations.some(
+          (v) => v.initialQty && Number(v.initialQty) > 0,
+        );
 
         if (hasInitialStock) {
           const batch = await tx.batch.create({
             data: {
-              batch_name: `Initial Stock - ${new Date().toISOString().split('T')[0]}`,
-            }
+              batch_name: `Initial Stock - ${new Date().toISOString().split("T")[0]}`,
+            },
           });
           batchId = batch.id;
         }
@@ -57,19 +59,26 @@ class Product {
                 storage_capacity: variant.capacity,
                 product_status_id: variant.statusId,
                 // Create stock if initial quantity is provided
-                stock: (variant.initialQty && Number(variant.initialQty) > 0) ? {
-                  create: {
-                    qty: Number(variant.initialQty),
-                    cost_price: Number(variant.costPrice || 0),
-                    mrp: Number(variant.mrp || 0),
-                    rsp: Number(variant.rsp || 0),
-                    wsp: Number(variant.wsp || 0),
-                    barcode: variant.barcode,
-                    batch_id: batchId,
-                    mfd: variant.mfgDate ? new Date(variant.mfgDate) : null,
-                    exp: variant.expDate ? new Date(variant.expDate) : null
-                  }
-                } : undefined
+                stock:
+                  variant.initialQty && Number(variant.initialQty) > 0
+                    ? {
+                        create: {
+                          qty: Number(variant.initialQty),
+                          cost_price: Number(variant.costPrice || 0),
+                          mrp: Number(variant.mrp || 0),
+                          rsp: Number(variant.rsp || 0),
+                          wsp: Number(variant.wsp || 0),
+                          barcode: variant.barcode,
+                          batch_id: batchId,
+                          mfd: variant.mfgDate
+                            ? new Date(variant.mfgDate)
+                            : null,
+                          exp: variant.expDate
+                            ? new Date(variant.expDate)
+                            : null,
+                        },
+                      }
+                    : undefined,
               })),
             },
           },
@@ -108,16 +117,18 @@ class Product {
       return products.flatMap((p) => {
         const categoryName = p.category ? p.category.name : null;
         const brandName = p.brand ? p.brand.name : null;
-        const unitName = p.unit_id_product_unit_idTounit_id ? p.unit_id_product_unit_idTounit_id.name : null;
+        const unitName = p.unit_id_product_unit_idTounit_id
+          ? p.unit_id_product_unit_idTounit_id.name
+          : null;
         const typeName = p.product_type ? p.product_type.name : null;
 
-        return p.product_variations.map(pv => ({
+        return p.product_variations.map((pv) => ({
           productID: p.id,
           pvId: pv.id,
           productName: p.product_name,
           baseProductName: p.product_name,
           productCode: p.product_code,
-          barcode: pv.barcode || '',
+          barcode: pv.barcode || "",
           category: categoryName,
           categoryId: p.category_id,
           brand: brandName,
@@ -126,10 +137,12 @@ class Product {
           unitId: p.unit_id,
           productType: typeName,
           productTypeId: p.product_type_id,
-          color: pv.color || 'Default',
-          size: pv.size || 'Default',
-          storage: pv.storage_capacity || 'N/A',
-          createdOn: p.created_at ? p.created_at.toISOString().split("T")[0] : null,
+          color: pv.color || "Default",
+          size: pv.size || "Default",
+          storage: pv.storage_capacity || "N/A",
+          createdOn: p.created_at
+            ? p.created_at.toISOString().split("T")[0]
+            : null,
         }));
       });
     }
@@ -138,7 +151,9 @@ class Product {
       const pv = p.product_variations[0] || {};
       const categoryName = p.category ? p.category.name : null;
       const brandName = p.brand ? p.brand.name : null;
-      const unitName = p.unit_id_product_unit_idTounit_id ? p.unit_id_product_unit_idTounit_id.name : null;
+      const unitName = p.unit_id_product_unit_idTounit_id
+        ? p.unit_id_product_unit_idTounit_id.name
+        : null;
       const typeName = p.product_type ? p.product_type.name : null;
 
       return {
@@ -147,7 +162,7 @@ class Product {
         productName: p.product_name,
         baseProductName: p.product_name,
         productCode: p.product_code,
-        barcode: pv.barcode || '',
+        barcode: pv.barcode || "",
         category: categoryName,
         categoryId: p.category_id,
         brand: brandName,
@@ -156,16 +171,24 @@ class Product {
         unitId: p.unit_id,
         productType: typeName,
         productTypeId: p.product_type_id,
-        color: pv.color || 'Default',
-        size: pv.size || 'Default',
-        storage: pv.storage_capacity || 'N/A',
-        createdOn: p.created_at ? p.created_at.toISOString().split("T")[0] : null,
+        color: pv.color || "Default",
+        size: pv.size || "Default",
+        storage: pv.storage_capacity || "N/A",
+        createdOn: p.created_at
+          ? p.created_at.toISOString().split("T")[0]
+          : null,
       };
     });
   }
 
-  static async getProductsForDropdown(statusId = 1, searchTerm = '', limit = 10) {
-    console.log(`Model getProductsForDropdown - Search: '${searchTerm}', Limit: '${limit}'`);
+  static async getProductsForDropdown(
+    statusId = 1,
+    searchTerm = "",
+    limit = 10,
+  ) {
+    console.log(
+      `Model getProductsForDropdown - Search: '${searchTerm}', Limit: '${limit}'`,
+    );
     const take = parseInt(limit) || 10;
     const where = {
       product_variations: {
@@ -257,8 +280,15 @@ class Product {
       const unitId = parseInt(productData.unitId);
       const typeId = parseInt(productData.typeId);
 
-      if (isNaN(categoryId) || isNaN(brandId) || isNaN(unitId) || isNaN(typeId)) {
-        throw new Error("Invalid product data: category, brand, unit, or type ID is not a valid number");
+      if (
+        isNaN(categoryId) ||
+        isNaN(brandId) ||
+        isNaN(unitId) ||
+        isNaN(typeId)
+      ) {
+        throw new Error(
+          "Invalid product data: category, brand, unit, or type ID is not a valid number",
+        );
       }
 
       await tx.product.update({
@@ -274,14 +304,14 @@ class Product {
       });
 
       const statusId = parseInt(variationData.statusId);
-      
+
       await tx.product_variations.update({
         where: { id: parsedPvID },
         data: {
           barcode: variationData.barcode,
-          color: variationData.color || 'Default',
-          size: variationData.size || 'Default',
-          storage_capacity: variationData.storage || 'N/A',
+          color: variationData.color || "Default",
+          size: variationData.size || "Default",
+          storage_capacity: variationData.storage || "N/A",
           product_status_id: isNaN(statusId) ? 1 : statusId,
         },
       });
@@ -320,18 +350,11 @@ class Product {
       filter.searchTerm !== "null" &&
       filter.searchTerm !== "undefined"
     ) {
-      const search = filter.searchTerm;
-      const searchConditions = [
+      const search = filter.searchTerm.toString().trim();
+      whereClause.OR = [
         { product_name: { contains: search } },
         { product_code: { contains: search } },
-        { product_variations: { some: { barcode: { contains: search } } } },
       ];
-
-      if (!isNaN(parseInt(search))) {
-        searchConditions.push({ id: parseInt(search) });
-      }
-
-      whereClause.OR = searchConditions;
     }
 
     const products = await prisma.product.findMany({
@@ -352,16 +375,18 @@ class Product {
       return products.flatMap((p) => {
         const categoryName = p.category ? p.category.name : null;
         const brandName = p.brand ? p.brand.name : null;
-        const unitName = p.unit_id_product_unit_idTounit_id ? p.unit_id_product_unit_idTounit_id.name : null;
+        const unitName = p.unit_id_product_unit_idTounit_id
+          ? p.unit_id_product_unit_idTounit_id.name
+          : null;
         const typeName = p.product_type ? p.product_type.name : null;
 
-        return p.product_variations.map(pv => ({
+        return p.product_variations.map((pv) => ({
           productID: p.id,
           pvId: pv.id,
           productName: p.product_name,
           baseProductName: p.product_name,
           productCode: p.product_code,
-          barcode: pv.barcode || '',
+          barcode: pv.barcode || "",
           category: categoryName,
           categoryId: p.category_id,
           brand: brandName,
@@ -370,10 +395,12 @@ class Product {
           unitId: p.unit_id,
           productType: typeName,
           productTypeId: p.product_type_id,
-          color: pv.color || 'Default',
-          size: pv.size || 'Default',
-          storage: pv.storage_capacity || 'N/A',
-          createdOn: p.created_at ? p.created_at.toISOString().split("T")[0] : null,
+          color: pv.color || "Default",
+          size: pv.size || "Default",
+          storage: pv.storage_capacity || "N/A",
+          createdOn: p.created_at
+            ? p.created_at.toISOString().split("T")[0]
+            : null,
         }));
       });
     }
@@ -382,7 +409,9 @@ class Product {
       const pv = p.product_variations[0] || {};
       const categoryName = p.category ? p.category.name : null;
       const brandName = p.brand ? p.brand.name : null;
-      const unitName = p.unit_id_product_unit_idTounit_id ? p.unit_id_product_unit_idTounit_id.name : null;
+      const unitName = p.unit_id_product_unit_idTounit_id
+        ? p.unit_id_product_unit_idTounit_id.name
+        : null;
       const typeName = p.product_type ? p.product_type.name : null;
 
       return {
@@ -391,7 +420,7 @@ class Product {
         productName: p.product_name,
         baseProductName: p.product_name,
         productCode: p.product_code,
-        barcode: pv.barcode || '',
+        barcode: pv.barcode || "",
         category: categoryName,
         categoryId: p.category_id,
         brand: brandName,
@@ -400,10 +429,12 @@ class Product {
         unitId: p.unit_id,
         productType: typeName,
         productTypeId: p.product_type_id,
-        color: pv.color || 'Default',
-        size: pv.size || 'Default',
-        storage: pv.storage_capacity || 'N/A',
-        createdOn: p.created_at ? p.created_at.toISOString().split("T")[0] : null,
+        color: pv.color || "Default",
+        size: pv.size || "Default",
+        storage: pv.storage_capacity || "N/A",
+        createdOn: p.created_at
+          ? p.created_at.toISOString().split("T")[0]
+          : null,
       };
     });
   }
@@ -416,7 +447,7 @@ class Product {
       });
       return { affectedRows: 1 };
     } catch (error) {
-      if (error.code === 'P2025') {
+      if (error.code === "P2025") {
         return { affectedRows: 0 };
       }
       throw error;
@@ -430,7 +461,7 @@ class Product {
       });
       return { affectedRows: 1 };
     } catch (error) {
-      if (error.code === 'P2025') {
+      if (error.code === "P2025") {
         return { affectedRows: 0 };
       }
       throw error;
@@ -442,11 +473,11 @@ class Product {
       data: {
         product_id: parseInt(productId),
         barcode: variationData.barcode,
-        color: variationData.color || 'Default',
-        size: variationData.size || 'Default',
-        storage_capacity: variationData.storage || 'N/A',
+        color: variationData.color || "Default",
+        size: variationData.size || "Default",
+        storage_capacity: variationData.storage || "N/A",
         product_status_id: parseInt(variationData.statusId) || 1,
-      }
+      },
     });
   }
 
@@ -469,8 +500,8 @@ class Product {
             product_status_id: statusId,
           },
           include: {
-            stock: true
-          }
+            stock: true,
+          },
         },
       },
       orderBy: { created_at: "desc" },
@@ -479,21 +510,26 @@ class Product {
     return products.flatMap((p) => {
       const categoryName = p.category ? p.category.name : null;
       const brandName = p.brand ? p.brand.name : null;
-      const unitName = p.unit_id_product_unit_idTounit_id ? p.unit_id_product_unit_idTounit_id.name : null;
+      const unitName = p.unit_id_product_unit_idTounit_id
+        ? p.unit_id_product_unit_idTounit_id.name
+        : null;
       const typeName = p.product_type ? p.product_type.name : null;
 
-      return p.product_variations.map(pv => {
-        const currentStock = pv.stock ? pv.stock.reduce((sum, item) => sum + (item.qty || 0), 0) : 0;
-        
+      return p.product_variations.map((pv) => {
+        const currentStock = pv.stock
+          ? pv.stock.reduce((sum, item) => sum + (item.qty || 0), 0)
+          : 0;
+
         return {
           productID: p.id,
           pvId: pv.id,
-          productName: pv.color !== 'Default' || pv.size !== 'Default' 
-            ? `${p.product_name} (${pv.color || ''} ${pv.size || ''})`
-            : p.product_name,
+          productName:
+            pv.color !== "Default" || pv.size !== "Default"
+              ? `${p.product_name} (${pv.color || ""} ${pv.size || ""})`
+              : p.product_name,
           baseProductName: p.product_name,
           productCode: p.product_code,
-          barcode: pv.barcode || '',
+          barcode: pv.barcode || "",
           category: categoryName,
           categoryId: p.category_id,
           brand: brandName,
@@ -502,11 +538,13 @@ class Product {
           unitId: p.unit_id,
           productType: typeName,
           productTypeId: p.product_type_id,
-          color: pv.color || 'Default',
-          size: pv.size || 'Default',
-          storage: pv.storage_capacity || 'N/A',
+          color: pv.color || "Default",
+          size: pv.size || "Default",
+          storage: pv.storage_capacity || "N/A",
           stock: currentStock,
-          createdOn: p.created_at ? p.created_at.toISOString().split("T")[0] : null,
+          createdOn: p.created_at
+            ? p.created_at.toISOString().split("T")[0]
+            : null,
         };
       });
     });
