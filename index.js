@@ -125,8 +125,8 @@ async function startServer() {
 
         // Initialize sync services (background sync worker)
         console.log('\n🔄 Initializing sync services...\n');
-        await initializeSyncServices(syncMode);
-        console.log('✅ Sync services initialized\n');
+        // await initializeSyncServices(syncMode);
+        console.log('✅ Sync services not initialized\n');
 
         // Update display mode tracking only; local DB stays primary at all times
         const db = require('./config/db');
